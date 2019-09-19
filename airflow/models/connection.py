@@ -102,6 +102,7 @@ class Connection(Base, LoggingMixin):
         ('azure_data_lake', 'Azure Data Lake'),
         ('azure_container_instances', 'Azure Container Instances'),
         ('azure_cosmos', 'Azure CosmosDB'),
+        ('azure_service_bus', 'Azure Service Bus'),
         ('cassandra', 'Cassandra',),
         ('qubole', 'Qubole'),
         ('mongo', 'MongoDB'),
@@ -257,6 +258,9 @@ class Connection(Base, LoggingMixin):
         elif self.conn_type == 'azure_cosmos':
             from airflow.contrib.hooks.azure_cosmos_hook import AzureCosmosDBHook
             return AzureCosmosDBHook(azure_cosmos_conn_id=self.conn_id)
+        elif self.conn_type == 'azure_service_bus':
+            from airflow.contrib.hooks.azure_service_bus_hook import AzureServiceBusHook
+            return AzureServiceBusHook(azure_service_bus_conn_id=self.conn_id)
         elif self.conn_type == 'cassandra':
             from airflow.contrib.hooks.cassandra_hook import CassandraHook
             return CassandraHook(cassandra_conn_id=self.conn_id)
