@@ -22,7 +22,7 @@ from airflow.hooks.base_hook import BaseHook
 from airflow.utils.log.logging_mixin import LoggingMixin
 from azure.servicebus import ServiceBusService, Message
 
-from typing import List, Any, TypeVar
+from typing import List, Any, TypeVar, Tuple
 
 log = LoggingMixin().log
 
@@ -44,7 +44,6 @@ class AzureServiceBusHook(BaseHook):
     def get_conn(self) -> AzSBService:
         """Return the Service Bus Service object."""
         conn = self.get_connection(self.conn_id)
-        service_options = conn.extra_dejson
         return ServiceBusService(
             conn.host, #Service bus namespace
             shared_access_key_name=conn.login, 
@@ -61,10 +60,12 @@ class AzureServiceBusHook(BaseHook):
 
         :param  messages_peek: A batch of messages to process
         :type messages_peek: List[AzSBMessage]
-        :param callback_preprocessor:
+        :param callback_preprocessor: A callback function that will preprocessed the data
         :type callback_preprocessor: Callable
-        :param callback_processor:
+        :param callback_processor A callback function meant to process the data
         :type callback_processor: Callable
+        :return: The preprocessed data 
+        :rtype: Any
         """
         try:
             callback_pre_processor = kwargs.get("callback_preprocessor")
@@ -93,7 +94,7 @@ class AzureServiceBusHook(BaseHook):
             sb_topic: str,
             sb_subscription: str,
             **kwargs
-        ) -> Any:
+        ) -> Tuple[int, Any]:
         """
         Consume messages from an Azure Service Bus topic subscription and execute a callback
 
@@ -117,4 +118,4 @@ class AzureServiceBusHook(BaseHook):
                 log.debug(message_peek.body)
                 messages_peek.append(message_peek)
         callback_res = self.sb_batch_callback(messages_peek, **kwargs)
-        return callback_res
+        return len(messages_peek), callback_res
