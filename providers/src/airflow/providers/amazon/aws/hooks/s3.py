@@ -882,11 +882,14 @@ class S3Hook(AwsBaseHook):
                 new_keys = page["Contents"]
                 if _apply_wildcard:
                     new_keys = (k for k in new_keys if fnmatch.fnmatch(k["Key"], _original_prefix))
-                keys.extend(new_keys)
-        if object_filter_usr is not None:
-            return object_filter_usr(keys, from_datetime, to_datetime)
-
-        return self._list_key_object_filter(keys, from_datetime, to_datetime)
+               
+                if object_filter_usr is not None:
+                    new_keys_filtered = object_filter_usr(new_keys, from_datetime, to_datetime)
+                else:
+                    new_keys_filtered = self._list_key_object_filter(new_keys, from_datetime, to_datetime)
+                
+                keys.extend(new_keys_filtered)
+        return keys
 
     @provide_bucket_name
     def get_file_metadata(
